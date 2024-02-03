@@ -1,12 +1,20 @@
 import {Router} from 'express';
 import fileDb from "../../fileDb";
-import {News, NewsWithoutId} from "../../types";
+import {NewsWithoutId} from "../../types";
+import {imageUpload} from "../../multer";
 
 const newsRouter = Router();
 
 newsRouter.get('/', async (req, res) => {
     const news = await fileDb.getNews();
-   res.send(news);
+
+    const cleanDescription = news.map((elem) => {
+        const {description, ...dataNews} = elem;
+        return dataNews;
+    });
+
+    res.send(cleanDescription);
+
 });
 
 newsRouter.get('/:id', async (req, res) => {
@@ -25,7 +33,7 @@ newsRouter.get('/:id', async (req, res) => {
     }
 });
 
-newsRouter.post('/', async (req, res) => {
+newsRouter.post('/', imageUpload.single('images'), async (req, res) => {
     try {
         if (!req.body.title || !req.body.description) {
             res.send('Введите название и описание новости!');

@@ -1,8 +1,11 @@
 import {promises as fs} from 'fs';
-import {News, NewsWithoutId} from "./types";
-
+import {CommentWithoutId, Data, NewsWithoutId} from "./types";
 const fileName = './db.json';
-let data: News[] = [];
+
+let data: Data = {
+  news: [],
+  comments: [],
+};
 
 const fileDb = {
   async init () {
@@ -10,19 +13,33 @@ const fileDb = {
       const fileContents = await fs.readFile(fileName);
       data = JSON.parse(fileContents.toString());
     } catch (err) {
-      data = [];
+      data = {
+        news: [],
+        comments: [],
+      };
     }
   },
   async getNews () {
-    return data;
+    return data.news;
   },
   async addNews (item: NewsWithoutId) {
     const id = crypto.randomUUID();
     const news = {id, ...item};
-    data.push(news);
+    data.news.push(news);
     await this.save();
 
     return news;
+  },
+  async getComments () {
+    return data.comments;
+  },
+  async addComments (item: CommentWithoutId) {
+    const id = crypto.randomUUID();
+    const comment = {id, ...item};
+    data.comments.push(comment);
+    await this.save();
+
+    return comment;
   },
   async save () {
     return fs.writeFile(fileName, JSON.stringify(data));
